@@ -1,11 +1,10 @@
-import pygame, sys
+import pygame, sys, os
 from constants import *
 from gameview import *
 
 def main():
     initialize_game()
     while True:
-        print "State: " + str(STATE)
         if STATE == START_SCREEN:
             start_screen()
         elif STATE == PLAYER_SETTINGS:
@@ -19,22 +18,19 @@ def main():
         else:
             raise Exception('Invalid game state')
 
-
 def initialize_game():
     global GAMEVIEW, FPSCLOCK, STATE
     pygame.init()
-    pygame.mixer.music.load('572768_Section-B---Demo-2.mp3')
+    pygame.mixer.music.load('sounds' + os.sep + '572768_Section-B---Demo-2.mp3')
     pygame.mixer.music.play(-1)
 
     GAMEVIEW = GameView()
     FPSCLOCK = pygame.time.Clock()
     STATE = START_SCREEN
 
-
 def end_game():
     pygame.quit()
     sys.exit()
-
 
 def start_screen():
     global STATE
@@ -47,9 +43,8 @@ def start_screen():
             end_game()
         if len(key_up) != 0:
             break
-    pygame.event.get() # Clears event queue
+    pygame.event.get() # To clear the event queue
     STATE = PLAYER_SETTINGS
-
 
 def player_settings():
     global STATE
@@ -65,7 +60,6 @@ def player_settings():
                     return
         GAMEVIEW.draw_player_settings()
         FPSCLOCK.tick(FPS)
-
 
 def play_match():
     global STATE
@@ -86,7 +80,6 @@ def play_match():
                     end_game()
         GAMEVIEW.draw_game_screen()
         FPSCLOCK.tick(FPS)
-
 
 if __name__ == '__main__':
     main()

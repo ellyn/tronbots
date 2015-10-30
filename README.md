@@ -5,5 +5,7 @@ TRONBOTS is designed with a minimal and modern-looking interface. All fonts and 
 
 In this game, you can play against a bot or have two bots play against each other. A human player can control the character with either the arrow keys or the WASD keyboard buttons.
 
+To play the game, just run tronbots.py.
+
 ## Implemented Bots:
 - To be completed...

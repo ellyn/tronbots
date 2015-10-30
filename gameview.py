@@ -1,6 +1,7 @@
-import pygame, sys
+import pygame, sys, os
 from pygame.locals import *
 from constants import *
+import player
 
 PLAYER_1_COLOR = USER_COLORS[0]
 PLAYER_2_COLOR = USER_COLORS[1]
@@ -8,7 +9,8 @@ PLAYER_2_COLOR = USER_COLORS[1]
 DISPLAYSURF = None
 
 def add_text(text, size, color, x, y, center=True, bold=True):
-    font = 'Montserrat-SemiBold.otf' if bold else 'Montserrat-UltraLight.otf'
+    font = 'fonts' + os.sep
+    font += 'Montserrat-SemiBold.otf' if bold else 'Montserrat-UltraLight.otf'
     surface = pygame.font.Font(font, size)
     text_obj = surface.render(text, True, color)
     position = text_obj.get_rect()

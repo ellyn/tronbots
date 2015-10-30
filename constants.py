@@ -44,3 +44,6 @@ GAME_HEIGHT = WINDOW_HEIGHT - 60
 CELL_WIDTH = 20 # Cell dimensions (each square of the grid)
 
 STATS_PADDING = GAME_HEIGHT + (WINDOW_HEIGHT - GAME_HEIGHT) / 2 # y coordinate for stats
+
+# Directions
+UP, LEFT, DOWN, RIGHT = 0, 1, 2, 3
