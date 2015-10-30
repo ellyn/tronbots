@@ -11,8 +11,8 @@ def main():
             player_settings()
         elif STATE == GAME_SCREEN:
             play_match()
-        elif STATE == TRY_AGAIN:
-            retry_options()
+        elif STATE == REMATCH:
+            rematch_options()
         elif STATE == END_GAME:
             end_game()
         else:
@@ -34,52 +34,65 @@ def end_game():
 
 def start_screen():
     global STATE
-    GAMEVIEW.draw_start_screen()
+    GAMEVIEW.draw_startscreen()
     while True:
         if len(pygame.event.get(QUIT)) > 0:
             end_game()
-        key_up = pygame.event.get(KEYUP)
-        if key_up != [] and key_up[0].key == K_ESCAPE:
-            end_game()
-        if len(key_up) != 0:
+        if (len(pygame.event.get(KEYDOWN)) != 0 or 
+            len(pygame.event.get(MOUSEBUTTONDOWN)) != 0):
             break
-    pygame.event.get() # To clear the event queue
+    pygame.event.get()
     STATE = PLAYER_SETTINGS
 
 def player_settings():
-    global STATE
+    global STATE, P1_HUMAN
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
                 end_game()
             elif event.type == MOUSEBUTTONDOWN:
                 x,y = event.pos[0], event.pos[1]
-                game_ready = GAMEVIEW.player_settings.handle_click(x,y)
+                game_ready, P1_HUMAN = GAMEVIEW.playersettings.handle_click(x,y)
                 if game_ready:
                     STATE = GAME_SCREEN
                     return
-        GAMEVIEW.draw_player_settings()
+        GAMEVIEW.draw_playersettings()
         FPSCLOCK.tick(FPS)
 
 def play_match():
-    global STATE
+    global STATE, OUTCOME
+    GAMEVIEW.setup_gamescreen()
+    OUTCOME = IN_PROGRESS
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
-                quitGame()
+                end_game()
             elif event.type == KEYDOWN:
-                if event.key == K_UP or event.key == K_w:
-                    direction = UP
-                elif event.key == K_LEFT or event.key == K_a:
-                    direction = LEFT
-                elif event.key == K_DOWN or event.key == K_s:
-                    direction = DOWN
-                elif event.key == K_RIGHT or event.key == K_d:
-                    direction = RIGHT
+                if P1_HUMAN and event.key in KEY_DIRECTION:
+                    GAMEVIEW.update_P1_direction(KEY_DIRECTION[event.key])
                 elif event.key == K_ESCAPE:
                     end_game()
-        GAMEVIEW.draw_game_screen()
+        OUTCOME = GAMEVIEW.check_game_status()
+        if OUTCOME != IN_PROGRESS:
+            STATE = REMATCH
+            return
+        GAMEVIEW.update_gamescreen()
         FPSCLOCK.tick(FPS)
+
+def rematch_options():
+    global STATE
+    GAMEVIEW.draw_rematchoptions(OUTCOME)
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                end_game()
+            elif event.type == MOUSEBUTTONDOWN:
+                x,y = event.pos[0], event.pos[1]
+                next_state = GAMEVIEW.rematchoptions.handle_click(x,y)
+                if next_state != -1:
+                    STATE = next_state
+                    return
+
 
 if __name__ == '__main__':
     main()

@@ -1,7 +1,8 @@
 import pygame, sys, os
 from pygame.locals import *
 from constants import *
-import player
+from player import *
+from randbot import *
 
 PLAYER_1_COLOR = USER_COLORS[0]
 PLAYER_2_COLOR = USER_COLORS[1]
@@ -29,23 +30,37 @@ class GameView(object):
         global DISPLAYSURF
         DISPLAYSURF = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption('TRONBOTS')
-        self.player_settings = PlayerSettings()
-        self.game_screen = GameScreen()
+        self.playersettings = PlayerSettings()
+        self._gamescreen = GameScreen()
+        self.rematchoptions = RematchOptions()
 
-    def draw_start_screen(self):
+    def draw_startscreen(self):
         DISPLAYSURF.fill(OFF_WHITE)
         add_text('TRONBOTS', 90, BLUE, CENTER_X, CENTER_Y - 30)
         add_text('Press any key to start.', 28, GRAY, CENTER_X, CENTER_Y + 40, bold=False)
         pygame.display.update()
 
-    def draw_player_settings(self):
+    def draw_playersettings(self):
         DISPLAYSURF.fill(OFF_WHITE)
-        self.player_settings.draw()
+        self.playersettings.draw()
         pygame.display.update()
 
-    def draw_game_screen(self):
+    def setup_gamescreen(self):
+        self._gamescreen.setup_game()
+
+    def update_gamescreen(self):
         DISPLAYSURF.fill(OFF_WHITE)
-        self.game_screen.draw()
+        self._gamescreen.draw()
+        pygame.display.update()
+
+    def update_P1_direction(self, direction):
+        self._gamescreen.player1.set_direction(direction)
+
+    def check_game_status(self):
+        return self._gamescreen.check_collisions()
+
+    def draw_rematchoptions(self, outcome):
+        self.rematchoptions.draw(outcome)
         pygame.display.update()
 
 
@@ -53,8 +68,6 @@ class PlayerSettings(object):
     """An instance represents the player settings screen of the game. 
     Draws all objects shown on the screen and also handles all user events 
     for this game state.
-
-    A GameView object must be initialized before this class can be used.
     """
 
     def __init__(self):
@@ -78,8 +91,11 @@ class PlayerSettings(object):
         add_text('HUMAN', 30, DARK_GRAY, 450, P1_SETTINGS_Y - 5, center=False)
         add_text('BOT', 30, LIGHT_GRAY, 625, P1_SETTINGS_Y - 5, center=False)
         
-        add_text("PLAYER 2:", 25, DARK_GRAY, 30, P2_SETTINGS_Y, center=False)
+        add_text('PLAYER 2:', 25, DARK_GRAY, 30, P2_SETTINGS_Y, center=False)
         add_text('BOT', 30, DARK_GRAY, 450, P2_SETTINGS_Y, center=False)
+
+        add_text('Use the WASD keys or the arrow keys to move!', 20, 
+            GRAY, CENTER_X, WINDOW_HEIGHT - 180)
 
         for i in range(len(USER_COLORS)):
             pygame.draw.rect(DISPLAYSURF, USER_COLORS[i], self.p1_rects[i])
@@ -91,20 +107,20 @@ class PlayerSettings(object):
         pygame.draw.rect(DISPLAYSURF, DARK_GRAY, self.p1_color_select, 3)
         pygame.draw.rect(DISPLAYSURF, DARK_GRAY, self.p2_color_select, 3)
 
-
+    # Returns a tuple of booleans: (game ready to start?, is Player 1 human?)
     def handle_click(self, x, y):
         global PLAYER_1_COLOR, PLAYER_2_COLOR
         if self.start_button.collidepoint(x,y):
-            return True
+            return True, True
         for i in range(len(USER_COLORS)):
             if self.p1_rects[i].collidepoint(x,y):
                 PLAYER_1_COLOR = USER_COLORS[i]
                 self.p1_color_select.center = self.p1_rects[i].center
-                return False
+                return False, True
             if self.p2_rects[i].collidepoint(x,y):
                 PLAYER_2_COLOR = USER_COLORS[i]
                 self.p2_color_select.center = self.p2_rects[i].center
-                return False
+                return False, True
 
 
 class GameScreen(object):
@@ -115,19 +131,45 @@ class GameScreen(object):
     """
 
     def __init__(self):
-        self.num_wins = 0
-        self.total_games = 1
+        self.num_p1_wins = 0
+        self.num_p2_wins = 0
+        self.total_games = 0
+        self.game_outcome = None
 
-    def new_game(self):
+    def setup_game(self):
+        self.player1 = Player(PLAYER_1_COLOR, 1)
+        self.player2 = Player(PLAYER_2_COLOR, 2)
         self.total_games += 1
+
+    def check_collisions(self):
+        p1_lost = self.player1.has_collided(self.player2)
+        p2_lost = self.player2.has_collided(self.player1)
+        if p1_lost or p2_lost:
+            DISPLAYSURF.fill(OFF_WHITE)
+            if p1_lost and not p2_lost:
+                self.num_p2_wins += 1
+                self.draw_stats()
+                return P2_WIN 
+            elif not p1_lost and p2_lost:
+                self.num_p1_wins += 1
+                self.draw_stats()
+                return P1_WIN
+            else:
+                self.draw_stats()
+                return TIE
+        else:
+            return IN_PROGRESS
 
     def draw_stats(self):
         pygame.draw.rect(DISPLAYSURF, DARK_GRAY, Rect(0, GAME_HEIGHT, 
             GAME_WIDTH, GAME_HEIGHT))
-        text_y = (WINDOW_HEIGHT - GAME_HEIGHT) / 2
-        p1_wins = 'PLAYER 1 WIN COUNT: 0'
+
+        p1_wins = 'PLAYER 1 WIN COUNT: '
+        p1_wins += str(self.num_p1_wins) + ' / ' + str(self.total_games)
         add_text(p1_wins, 24, OFF_WHITE, CENTER_X / 2, STATS_PADDING)
-        p2_wins = 'PLAYER 2 WIN COUNT: 0'
+
+        p2_wins = 'PLAYER 2 WIN COUNT: '
+        p2_wins += str(self.num_p2_wins) + ' / ' + str(self.total_games)
         add_text(p2_wins, 24, OFF_WHITE, CENTER_X * 1.5, STATS_PADDING)
 
     def draw_grid(self):
@@ -137,10 +179,12 @@ class GameScreen(object):
             pygame.draw.line(DISPLAYSURF, LIGHT_GRAY, (0, y), (GAME_WIDTH, y))
 
     def draw_player1(self):
-        pass
+        self.player1.choose_move(self.player2)
+        self.player1.draw(DISPLAYSURF)
 
     def draw_player2(self):
-        pass
+        self.player2.choose_move(self.player1)
+        self.player2.draw(DISPLAYSURF)
 
     def draw(self):
         self.draw_grid()
@@ -148,12 +192,30 @@ class GameScreen(object):
         self.draw_player2()
         self.draw_stats()
 
-        pygame.display.update()
 
-        #Placeholder
-        while True:
-            if len(pygame.event.get(QUIT)) > 0:
-                pygame.quit()
-                sys.exit()
-            if len(pygame.event.get(KEYUP)) != 0:
-                break
+class RematchOptions(object):
+    def __init__(self):
+        self.yes = Rect(0, 0, 100, 40)
+        self.yes.center = (CENTER_X - 130, CENTER_Y + 40)
+
+        self.no = Rect(0, 0, 90, 40)
+        self.no.center = (CENTER_X + 130, CENTER_Y + 40)
+
+    def draw(self, outcome):
+        if outcome == TIE:
+            add_text('TIE', 100, PURPLE, CENTER_X, CENTER_Y-100)
+        elif outcome == P1_WIN:
+            add_text('PLAYER 1 WINS', 86, PLAYER_1_COLOR, CENTER_X, CENTER_Y-100)
+        elif outcome == P2_WIN:
+            add_text('PLAYER 2 WINS', 86, PLAYER_2_COLOR, CENTER_X, CENTER_Y-100)
+        add_text('Would you like a rematch?', 40, DARK_GRAY, CENTER_X, CENTER_Y-25, bold=False)
+        
+        add_text('YES', 40, DARK_GRAY, CENTER_X - 130, CENTER_Y + 40)
+        add_text('NO', 40, DARK_GRAY, CENTER_X + 130, CENTER_Y + 40)
+
+    def handle_click(self, x, y):
+        if self.yes.collidepoint(x,y):
+            return GAME_SCREEN
+        if self.no.collidepoint(x,y):
+            return END_GAME
+        return -1
