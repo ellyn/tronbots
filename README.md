@@ -11,6 +11,12 @@ To play the game, just run tronbots.py.
 ## Implemented Bots:
 - To be completed...
 
+### To Do:
+- Add logic to prevent both players from having the same color
+- Support a random bot
+- Allow bot vs bot matches
+- Support more bots
+
 ### Media Sources:
 - Music: Section B - Demo 2 by steampianist (http://www.newgrounds.com/audio/listen/572768)
 - Font: Montserrat (https://www.google.com/fonts/specimen/Montserrat)
