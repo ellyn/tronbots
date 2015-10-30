@@ -183,7 +183,7 @@ class GameScreen(object):
         self.player1.draw(DISPLAYSURF)
 
     def draw_player2(self):
-        self.player2.choose_move(self.player1)
+        #self.player2.choose_move(self.player1)
         self.player2.draw(DISPLAYSURF)
 
     def draw(self):
