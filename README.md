@@ -9,11 +9,10 @@ TRONBOTS is designed with a clean, minimal interface. All fonts and media used a
 To play the game, just run tronbots.py.
 
 ## Implemented Bots:
-- To be completed...
+- Random bot
 
 ### To Do:
 - Add logic to prevent both players from having the same color
-- Support a random bot
 - Allow bot vs bot matches
 - Support more bots
 

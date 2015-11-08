@@ -54,6 +54,8 @@ CELL_WIDTH  = 20 # Cell dimensions (each square of the grid)
 
 STATS_PADDING = GAME_HEIGHT + (WINDOW_HEIGHT - GAME_HEIGHT) / 2 # y coordinate for stats
 
+PLAYER_GROWTH_RATE = 3 # Number of units moved by player before tail moves one unit
+
 # Default player starting locations
 P1_LOC = (GAME_WIDTH / CELL_WIDTH / 4 * CELL_WIDTH, 	
 		  GAME_HEIGHT / CELL_WIDTH / 2 * CELL_WIDTH)

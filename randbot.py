@@ -3,33 +3,25 @@ from player import *
 from constants import *
 
 class RandBot(Player):
-	def __init__(self, color, player_num):
-		Player.__init__(self, color, player_num)
-		self.buffer = CELL_WIDTH
+    def __init__(self, color, player_num):
+        Player.__init__(self, color, player_num)
 
-	def choose_move(self, other_player):
-		choice = random.randint(1,4)
-		if choice == 1:
-			possible_directions = [i for i in range(4)]
-			if self.direction == UP:
-				possible_directions.remove(DOWN)
-			elif self.direction == DOWN:
-				possible_directions.remove(UP)
-			elif self.direction == LEFT:
-				possible_directions.remove(RIGHT)
-			else:
-				possible_directions.remove(LEFT)
+    def choose_move(self, other_player):
+        possible_directions = [i for i in range(4)]
+        safe_directions = possible_directions[:]
+        head = self.segments[0].topleft
 
-			head = self.segments[0].topleft
-			if head[0] < self.buffer:
-				possible_directions.remove(LEFT)
-			elif head[0] > GAME_WIDTH - self.buffer:
-				possible_directions.remove(RIGHT)
+        # Prevent collisions with board edges and players
+        for direction in possible_directions:
+            delta = DIRECTION_DELTAS[direction]
+            x = head[0] + delta['x'] * CELL_WIDTH
+            y = head[1] + delta['y'] * CELL_WIDTH
+            possible_head = Rect(x, y, CELL_WIDTH, CELL_WIDTH)
+            if self.has_collided(other_player, head=possible_head):
+                safe_directions.remove(direction)
+        
+        # Randomly choose new direction if current direction is unsafe
+        if self.direction not in safe_directions:
+            self.direction = random.choice(safe_directions)
 
-			if head[1] < self.buffer:
-				possible_directions.remove(UP)
-			elif head[1] > GAME_WIDTH - self.buffer:
-				possible_directions.remove(DOWN)
-
-			self.direction = random.choice(possible_directions)
-		self.move()
+        self.move()

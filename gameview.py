@@ -1,4 +1,4 @@
-import pygame, sys, os
+import pygame, os
 from pygame.locals import *
 from constants import *
 from player import *
@@ -121,6 +121,7 @@ class PlayerSettings(object):
                 PLAYER_2_COLOR = USER_COLORS[i]
                 self.p2_color_select.center = self.p2_rects[i].center
                 return False, True
+        return False, True
 
 
 class GameScreen(object):
@@ -138,7 +139,7 @@ class GameScreen(object):
 
     def setup_game(self):
         self.player1 = Player(PLAYER_1_COLOR, 1)
-        self.player2 = Player(PLAYER_2_COLOR, 2)
+        self.player2 = RandBot(PLAYER_2_COLOR, 2)
         self.total_games += 1
 
     def check_collisions(self):
@@ -183,7 +184,7 @@ class GameScreen(object):
         self.player1.draw(DISPLAYSURF)
 
     def draw_player2(self):
-        #self.player2.choose_move(self.player1)
+        self.player2.choose_move(self.player1)
         self.player2.draw(DISPLAYSURF)
 
     def draw(self):

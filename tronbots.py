@@ -41,7 +41,7 @@ def start_screen():
         if (len(pygame.event.get(KEYDOWN)) != 0 or 
             len(pygame.event.get(MOUSEBUTTONDOWN)) != 0):
             break
-    pygame.event.get()
+    pygame.event.clear()
     STATE = PLAYER_SETTINGS
 
 def player_settings():
