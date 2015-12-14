@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 from constants import *
 from copy import deepcopy
+import numpy as np
 
 class Player(object):
     def __init__(self, color, player_num):
@@ -26,15 +27,28 @@ class Player(object):
             cloned_player.move()
         return cloned_player
 
+    def get_state(self, other_player):
+        state = np.zeros((GAME_HEIGHT/CELL_WIDTH, GAME_WIDTH/CELL_WIDTH))
+        for rect in self.segments:
+            loc = rect.topleft
+            x,y = loc[0]/CELL_WIDTH, loc[1]/CELL_WIDTH
+            state[y,x] = FRIENDLY
+        for rect in other_player.segments:
+            loc = rect.topleft
+            x,y = loc[0]/CELL_WIDTH, loc[1]/CELL_WIDTH
+            state[y,x] = OPPONENT
+        return state
+
+
     def has_collided(self, other_player, head = None):
         segments_to_check = self.segments[:]
         if head == None:
             head = self.segments[0]
             segments_to_check.pop(0)
         head_loc = head.topleft
-        return (not (0 <= head_loc[0] <= GAME_WIDTH - CELL_WIDTH) or 
+        return (not (0 <= head_loc[0] <= GAME_WIDTH - CELL_WIDTH) or
                 not (0 <= head_loc[1] <= GAME_HEIGHT - CELL_WIDTH) or
-                head.collidelist(segments_to_check) != -1 or 
+                head.collidelist(segments_to_check) != -1 or
                 head.collidelist(other_player.segments) != -1)
 
     def draw(self, display_surface):
@@ -52,12 +66,12 @@ class Player(object):
         if self.move_counter == 0:
             self.segments.pop() # Remove last segment of tail
 
-    """ Chooses the next move to make in the game. 
+    """ Chooses the next move to make in the game.
     Subclasses of Player (aka custom bots) should override this method.
-    
+
     other_player is a dict object with the following key/values:
         direction: The other player's current direction (i.e. UP)
         segments: Copy of list of segments of the other player
-    """ 
+    """
     def choose_move(self, other_player):
         self.move()

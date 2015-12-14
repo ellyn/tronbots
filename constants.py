@@ -22,7 +22,7 @@ GREEN       = pygame.Color(165, 189, 89)
 PURPLE 		= pygame.Color(171, 139, 182)
 
 # Frames per second
-FPS = 40
+FPS = 80
 
 # Game states
 START_SCREEN    = 0
@@ -45,7 +45,7 @@ SQUARE_WIDTH        = 30 # Width of the color square
 SQUARE_INIT_PADDING = 185 # Initial x coordinate of the first color square
 SQUARE_SEP          = 45 # Horizontal separation between color squares
 
-USER_COLORS = [BLUE, RED, ORANGE, GREEN] # Color squares that players can choose from 
+USER_COLORS = [BLUE, RED, ORANGE, GREEN] # Color squares that players can choose from
 
 # Game Screen constants
 GAME_WIDTH  = WINDOW_WIDTH
@@ -57,10 +57,10 @@ STATS_PADDING = GAME_HEIGHT + (WINDOW_HEIGHT - GAME_HEIGHT) / 2 # y coordinate f
 PLAYER_GROWTH_RATE = 3 # Number of units moved by player before tail moves one unit
 
 # Default player starting locations
-P1_LOC = (GAME_WIDTH / CELL_WIDTH / 4 * CELL_WIDTH, 	
+P1_LOC = (GAME_WIDTH / CELL_WIDTH / 4 * CELL_WIDTH,
 		  GAME_HEIGHT / CELL_WIDTH / 2 * CELL_WIDTH)
 
-P2_LOC = (GAME_WIDTH / CELL_WIDTH * 0.75 * CELL_WIDTH, 	
+P2_LOC = (GAME_WIDTH / CELL_WIDTH * 0.75 * CELL_WIDTH,
 		  GAME_HEIGHT / CELL_WIDTH / 2 * CELL_WIDTH)
 
 # Directions
@@ -72,8 +72,12 @@ DELTA_RIGHT = {'x':  1, 'y':  0}
 DIRECTION_DELTAS = [DELTA_UP, DELTA_DOWN, DELTA_LEFT, DELTA_RIGHT]
 
 KEY_DIRECTION = {
-    K_w: UP,    K_UP:    UP,   
-    K_s: DOWN,  K_DOWN:  DOWN, 
-    K_a: LEFT,  K_LEFT:  LEFT, 
+    K_w: UP,    K_UP:    UP,
+    K_s: DOWN,  K_DOWN:  DOWN,
+    K_a: LEFT,  K_LEFT:  LEFT,
     K_d: RIGHT, K_RIGHT: RIGHT,
 }
+
+# Square Labels
+FRIENDLY = 1
+OPPONENT = 2
