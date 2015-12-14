@@ -3,7 +3,9 @@ from pygame.locals import *
 from constants import *
 from player import *
 from randbot import *
+from minimaxbot import *
 
+# Initializations of player colors
 PLAYER_1_COLOR = USER_COLORS[0]
 PLAYER_2_COLOR = USER_COLORS[1]
 
@@ -136,10 +138,11 @@ class GameScreen(object):
         self.num_p2_wins = 0
         self.total_games = 0
         self.game_outcome = None
+        self.is_player1_turn = True
 
     def setup_game(self):
         self.player1 = Player(PLAYER_1_COLOR, 1)
-        self.player2 = RandBot(PLAYER_2_COLOR, 2)
+        self.player2 = MinimaxBot(PLAYER_2_COLOR, 2)#RandBot(PLAYER_2_COLOR, 2)
         self.total_games += 1
 
     def check_collisions(self):
@@ -147,31 +150,32 @@ class GameScreen(object):
         p2_lost = self.player2.has_collided(self.player1)
         if p1_lost or p2_lost:
             DISPLAYSURF.fill(OFF_WHITE)
-            if p1_lost and not p2_lost:
+            if p1_lost and self.is_player1_turn:
                 self.num_p2_wins += 1
                 self.draw_stats()
                 return P2_WIN 
-            elif not p1_lost and p2_lost:
+            elif p2_lost and not self.is_player1_turn:
                 self.num_p1_wins += 1
                 self.draw_stats()
                 return P1_WIN
             else:
-                self.draw_stats()
-                return TIE
+                raise Exception('Collision logic error')
         else:
+            self.is_player1_turn = not self.is_player1_turn
             return IN_PROGRESS
 
     def draw_stats(self):
         pygame.draw.rect(DISPLAYSURF, DARK_GRAY, Rect(0, GAME_HEIGHT, 
             GAME_WIDTH, GAME_HEIGHT))
 
-        p1_wins = 'PLAYER 1 WIN COUNT: '
-        p1_wins += str(self.num_p1_wins) + ' / ' + str(self.total_games)
-        add_text(p1_wins, 24, OFF_WHITE, CENTER_X / 2, STATS_PADDING)
+        p1_wins = 'PLAYER 1 WINS: ' + str(self.num_p1_wins)
+        add_text(p1_wins, 24, OFF_WHITE, CENTER_X / 3, STATS_PADDING)
 
-        p2_wins = 'PLAYER 2 WIN COUNT: '
-        p2_wins += str(self.num_p2_wins) + ' / ' + str(self.total_games)
-        add_text(p2_wins, 24, OFF_WHITE, CENTER_X * 1.5, STATS_PADDING)
+        p2_wins = 'PLAYER 2 WINS: ' + str(self.num_p2_wins)
+        add_text(p2_wins, 24, OFF_WHITE, CENTER_X * (5.0/3), STATS_PADDING)
+
+        total_games = 'TOTAL GAMES: ' + str(self.total_games)
+        add_text(total_games, 24, OFF_WHITE, CENTER_X, STATS_PADDING)
 
     def draw_grid(self):
         for x in range(0, GAME_WIDTH, CELL_WIDTH): # Vertical lines
@@ -180,11 +184,13 @@ class GameScreen(object):
             pygame.draw.line(DISPLAYSURF, LIGHT_GRAY, (0, y), (GAME_WIDTH, y))
 
     def draw_player1(self):
-        self.player1.choose_move(self.player2)
+        if self.is_player1_turn:
+            self.player1.choose_move(self.player2)
         self.player1.draw(DISPLAYSURF)
 
     def draw_player2(self):
-        self.player2.choose_move(self.player1)
+        if not self.is_player1_turn:
+            self.player2.choose_move(self.player1)
         self.player2.draw(DISPLAYSURF)
 
     def draw(self):

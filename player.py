@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 from constants import *
+from copy import deepcopy
 
 class Player(object):
     def __init__(self, color, player_num):
@@ -15,6 +16,15 @@ class Player(object):
 
     def set_color(self, color):
         self.color = color
+
+    def clone(self, player=None, direction=None):
+        if player == None:
+            player = self
+        cloned_player = deepcopy(player)
+        if direction != None:
+            cloned_player.direction = direction
+            cloned_player.move()
+        return cloned_player
 
     def has_collided(self, other_player, head = None):
         segments_to_check = self.segments[:]
@@ -42,6 +52,12 @@ class Player(object):
         if self.move_counter == 0:
             self.segments.pop() # Remove last segment of tail
 
-    # Subclasses of Player (aka custom bots) should override this method
+    """ Chooses the next move to make in the game. 
+    Subclasses of Player (aka custom bots) should override this method.
+    
+    other_player is a dict object with the following key/values:
+        direction: The other player's current direction (i.e. UP)
+        segments: Copy of list of segments of the other player
+    """ 
     def choose_move(self, other_player):
         self.move()

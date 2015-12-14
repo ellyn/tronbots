@@ -7,7 +7,7 @@ class RandBot(Player):
         Player.__init__(self, color, player_num)
 
     def choose_move(self, other_player):
-        possible_directions = [i for i in range(4)]
+        possible_directions = range(4)
         safe_directions = possible_directions[:]
         head = self.segments[0].topleft
 
@@ -20,8 +20,9 @@ class RandBot(Player):
             if self.has_collided(other_player, head=possible_head):
                 safe_directions.remove(direction)
         
-        # Randomly choose new direction if current direction is unsafe
-        if self.direction not in safe_directions:
+        # Randomly choose new direction from safe directions 
+        # if current direction is unsafe
+        if self.direction not in safe_directions and safe_directions != []:
             self.direction = random.choice(safe_directions)
 
         self.move()

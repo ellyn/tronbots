@@ -22,7 +22,7 @@ GREEN       = pygame.Color(165, 189, 89)
 PURPLE 		= pygame.Color(171, 139, 182)
 
 # Frames per second
-FPS = 15
+FPS = 40
 
 # Game states
 START_SCREEN    = 0

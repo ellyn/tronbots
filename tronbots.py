@@ -92,6 +92,9 @@ def rematch_options():
                 if next_state != -1:
                     STATE = next_state
                     return
+            elif event.type == KEYDOWN and event.key == K_RETURN:
+                STATE = GAME_SCREEN
+                return
 
 
 if __name__ == '__main__':
