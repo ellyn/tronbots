@@ -1,6 +1,8 @@
 from player import *
 from constants import *
+from heuristic import *
 import timeit
+
 
 class MinimaxBot(Player):
     """ This bot uses the well-known Minimax algorithm for its strategy,
@@ -13,7 +15,7 @@ class MinimaxBot(Player):
     and losses to be -1.
     """
 
-    def __init__(self, color, player_num, pruning=True, depth=4, heuristic=SIMPLE_RATIO):
+    def __init__(self, color, player_num, pruning=True, depth=1, heuristic=CHAMBER):
         Player.__init__(self, color, player_num)
         self.heuristic = heuristic
         self.pruning = pruning
@@ -22,35 +24,6 @@ class MinimaxBot(Player):
     def choose_move(self, other_player):
         self.set_direction(self.minimax(other_player, 0))
         self.move()
-
-    def get_safe_directions(self, player1, player2):
-        possible_directions = range(4)
-        safe_directions = possible_directions[:]
-        head = player1.segments[0].topleft
-
-        # Prevent collisions with board edges and players
-        for direction in possible_directions:
-            delta = DIRECTION_DELTAS[direction]
-            x = head[0] + delta['x'] * CELL_WIDTH
-            y = head[1] + delta['y'] * CELL_WIDTH
-            possible_head = Rect(x, y, CELL_WIDTH, CELL_WIDTH)
-            if player1.has_collided(player2, head=possible_head):
-                safe_directions.remove(direction)
-
-        return safe_directions
-
-    def simple_ratio_heuristic(self, player, opponent):
-        #state = player.get_state(other_player)
-        #head = player.segments[0].topleft
-        #hx,hy = head[0]/CELL_WIDTH, head[1]/CELL_WIDTH
-        #assert state[hy,hx] == FRIENDLY, "Head of player not friendly"
-        player_safe_count = len(self.get_safe_directions(player, opponent))
-        opponent_safe_count = len(self.get_safe_directions(opponent, player))
-        if player_safe_count == 0:
-            return LOSE
-        if opponent_safe_count == 0:
-            return WIN
-        return (player_safe_count - opponent_safe_count) / 3.0
 
     def evaluate_board(self, player, opponent, turn):
         player_lost = player.has_collided(opponent)
@@ -62,7 +35,14 @@ class MinimaxBot(Player):
         if turn == OPPONENT and player_lost:
             return LOSE
         if self.heuristic == SIMPLE_RATIO:
-            return self.simple_ratio_heuristic(player, opponent)
+            return simple_ratio_heuristic(player, opponent)
+
+        if self.heuristic == VORONOI:
+            return voronoi_heuristic(player, opponent)
+
+        if self.heuristic == CHAMBER:
+            return chamber_heuristic(player,opponent)
+
         raise Exception("Heuristic Not Implemented")
 
     def minimax(self, opponent, depth):

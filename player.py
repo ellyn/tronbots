@@ -3,6 +3,7 @@ from pygame.locals import *
 from constants import *
 from copy import deepcopy
 import numpy as np
+from heuristic import *
 
 class Player(object):
     def __init__(self, color, player_num):

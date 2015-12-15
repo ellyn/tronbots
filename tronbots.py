@@ -43,13 +43,14 @@ def start_screen():
     global STATE
     GAMEVIEW.draw_startscreen()
     while True:
-        if len(pygame.event.get(QUIT)) > 0:
-            end_game()
-        if (len(pygame.event.get(KEYDOWN)) != 0 or 
-            len(pygame.event.get(MOUSEBUTTONDOWN)) != 0):
-            break
-    pygame.event.clear()
-    STATE = MODE_SELECT
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                end_game()
+            elif event.type == KEYDOWN and event.key == K_RETURN:
+                pygame.event.clear()
+                STATE = MODE_SELECT
+                return
+
 
 def player_settings():
     global STATE, P1_HUMAN
@@ -154,7 +155,7 @@ def tournament_results():
     while True:
         if len(pygame.event.get(QUIT)) > 0:
             end_game()
-        if (len(pygame.event.get(KEYDOWN)) != 0 or 
+        if (len(pygame.event.get(KEYDOWN)) != 0 or
             len(pygame.event.get(MOUSEBUTTONDOWN)) != 0):
             break
     pygame.event.clear()
