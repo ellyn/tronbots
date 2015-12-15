@@ -85,6 +85,7 @@ KEY_DIRECTION = {
 # Square Labels
 FRIENDLY = 1
 OPPONENT = 2
+ARTICULATION = 3
 
 WIN 	= 1
 LOSE 	= -1
@@ -93,3 +94,7 @@ LOSE 	= -1
 SIMPLE_RATIO	= 0
 CHAMBER 		= 1
 VORONOI 		= 2
+
+# Algorithms for bots
+NAIVE 	= 0
+MINIMAX = 1
