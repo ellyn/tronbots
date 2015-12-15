@@ -148,6 +148,7 @@ class PlayerSettings(object):
         self.player_info = []
 
     def reset(self):
+        global PLAYER_INFO, P1_HUMAN
         self.first_player_select = True
         self.heuristic_selected = SIMPLE_RATIO
         self.algorithm_selected = MINIMAX
@@ -155,6 +156,8 @@ class PlayerSettings(object):
         self.depth = 5
         self.phase = 0
         self.player_info = []
+        PLAYER_INFO = []
+        P1_HUMAN = False
 
     def draw(self):
         if self.phase == 0:
@@ -185,7 +188,6 @@ class PlayerSettings(object):
             pygame.draw.rect(DISPLAYSURF, DARK_GRAY, self.p2_color_select, 3)
 
         else:
-            pygame.draw.rect(DISPLAYSURF, GRAY, self.start_button)
             if self.first_player_select:
                 add_text('Set settings for Player 1', 40, DARK_GRAY, CENTER_X, 60)
             else:
