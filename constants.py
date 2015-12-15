@@ -31,6 +31,9 @@ GAME_SCREEN     = 2
 REMATCH       	= 3
 END_GAME        = 4
 
+TEST_MODE 		= 5
+TEST_RESULTS 	= 6
+
 # Game outcomes
 IN_PROGRESS = 0
 P1_WIN 		= 1
