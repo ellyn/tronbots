@@ -53,13 +53,14 @@ def start_screen():
 
 def player_settings():
     global STATE, P1_HUMAN
+    GAMEVIEW.playersettings.reset()
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
                 end_game()
             elif event.type == MOUSEBUTTONDOWN:
                 x,y = event.pos[0], event.pos[1]
-                game_ready, P1_HUMAN = GAMEVIEW.playersettings.handle_click(x,y)
+                game_ready = GAMEVIEW.playersettings.handle_click(x,y)
                 if game_ready:
                     STATE = GAME_SCREEN
                     return
@@ -75,7 +76,7 @@ def play_match():
             if event.type == QUIT:
                 end_game()
             elif event.type == KEYDOWN:
-                if P1_HUMAN and event.key in KEY_DIRECTION:
+                if GAMEVIEW.is_p1_human() and event.key in KEY_DIRECTION:
                     GAMEVIEW.update_P1_direction(KEY_DIRECTION[event.key])
                 elif event.key == K_ESCAPE:
                     end_game()
@@ -133,6 +134,7 @@ def play_tournament(bot_info):
 
 def tournament():
     global STATE
+    GAMEVIEW.tournament.reset()
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:

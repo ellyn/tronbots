@@ -98,3 +98,4 @@ VORONOI 		= 2
 # Algorithms for bots
 NAIVE 	= 0
 MINIMAX = 1
+HUMAN 	= 2
