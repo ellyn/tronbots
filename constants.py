@@ -31,6 +31,10 @@ GAME_SCREEN     = 2
 REMATCH       	= 3
 END_GAME        = 4
 
+MODE_SELECT 	= 5
+TOURNAMENT	 	= 6
+TOURN_RESULTS 	= 7
+
 # Game outcomes
 IN_PROGRESS = 0
 P1_WIN 		= 1
@@ -82,8 +86,10 @@ KEY_DIRECTION = {
 FRIENDLY = 1
 OPPONENT = 2
 
-WIN = 1
-LOSE = -1
+WIN 	= 1
+LOSE 	= -1
 
-#Heuristics
-SIMPLE_RATIO = 0
+# Heuristics
+SIMPLE_RATIO	= 0
+CHAMBER 		= 1
+VORONOI 		= 2
