@@ -15,7 +15,7 @@ class MinimaxBot(Player):
     and losses to be -1.
     """
 
-    def __init__(self, color, player_num, pruning=True, depth=4, heuristic=SIMPLE_RATIO):
+    def __init__(self, color, player_num, pruning=True, depth=1, heuristic=CHAMBER):
         Player.__init__(self, color, player_num)
         self.heuristic = heuristic
         self.pruning = pruning
@@ -39,6 +39,9 @@ class MinimaxBot(Player):
 
         if self.heuristic == VORONOI:
             return voronoi_heuristic(player, opponent)
+
+        if self.heuristic == CHAMBER:
+            return chamber_heuristic(player,opponent)
 
         raise Exception("Heuristic Not Implemented")
 
