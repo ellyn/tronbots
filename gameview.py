@@ -29,7 +29,7 @@ def add_text(text, size, color, x, y, center=True, bold=True):
 
 
 class GameView(object):
-    """An instance of this is used to handle all updating of the game view 
+    """An instance of this is used to handle all updating of the game view
     during an instance of TRONBOTS for all game states."""
 
     def __init__(self):
@@ -48,7 +48,7 @@ class GameView(object):
     def draw_startscreen(self):
         DISPLAYSURF.fill(OFF_WHITE)
         add_text('TRONBOTS', 90, BLUE, CENTER_X, CENTER_Y - 30)
-        add_text('Press any key to start.', 28, GRAY, CENTER_X, CENTER_Y + 40, bold=False)
+        add_text('Press enter to start.', 28, GRAY, CENTER_X, CENTER_Y + 40, bold=False)
         pygame.display.update()
 
     def draw_playersettings(self):
@@ -94,15 +94,15 @@ class GameView(object):
         p2_wins = 'PLAYER 2 WINS: ' + str(results[1])
         add_text(p2_wins, 36, PLAYER_2_COLOR, CENTER_X, CENTER_Y + 30)
 
-        add_text('Press any key to return to mode selection!', 29, GRAY, CENTER_X, 
+        add_text('Press enter to return to mode selection!', 29, GRAY, CENTER_X,
             CENTER_Y + 110, bold=False)
 
         pygame.display.update()
 
 
 class PlayerSettings(object):
-    """An instance represents the player settings screen of the game. 
-    Draws all objects shown on the screen and also handles all user events 
+    """An instance represents the player settings screen of the game.
+    Draws all objects shown on the screen and also handles all user events
     for this game state.
     """
 
@@ -115,12 +115,12 @@ class PlayerSettings(object):
         self.human1 = Rect(450, P1_SETTINGS_Y - 5, 120, 40)
         self.bot1 = Rect(625, P1_SETTINGS_Y - 5, 70, 40)
 
-        self.colors_x = [SQUARE_INIT_PADDING + i*SQUARE_SEP 
+        self.colors_x = [SQUARE_INIT_PADDING + i*SQUARE_SEP
                             for i in range(len(USER_COLORS))]
-        
-        self.p1_rects = [Rect(x, P1_SETTINGS_Y + 2, SQUARE_WIDTH, SQUARE_WIDTH) 
+
+        self.p1_rects = [Rect(x, P1_SETTINGS_Y + 2, SQUARE_WIDTH, SQUARE_WIDTH)
                             for x in self.colors_x]
-        self.p2_rects = [Rect(x, P2_SETTINGS_Y + 2, SQUARE_WIDTH, SQUARE_WIDTH) 
+        self.p2_rects = [Rect(x, P2_SETTINGS_Y + 2, SQUARE_WIDTH, SQUARE_WIDTH)
                             for x in self.colors_x]
 
         self.p1_color_select = self.p1_rects[0].inflate(2,2)
@@ -167,11 +167,11 @@ class PlayerSettings(object):
             else:
                 add_text('HUMAN', 30, LIGHT_GRAY, 450, P1_SETTINGS_Y - 5, center=False)
                 add_text('BOT', 30, DARK_GRAY, 625, P1_SETTINGS_Y - 5, center=False)
-            
+
             add_text('PLAYER 2:', 25, DARK_GRAY, 30, P2_SETTINGS_Y, center=False)
             add_text('BOT', 30, DARK_GRAY, 450, P2_SETTINGS_Y, center=False)
 
-            add_text('Use the WASD keys or the arrow keys to move!', 20, 
+            add_text('Use the WASD keys or the arrow keys to move!', 20,
                 GRAY, CENTER_X, WINDOW_HEIGHT - 180)
 
             for i in range(len(USER_COLORS)):
@@ -205,7 +205,7 @@ class PlayerSettings(object):
                 add_text('NAIVE BOT', 30, LIGHT_GRAY, 350, P1_SETTINGS_Y-35)
                 add_text('MINIMAX BOT', 30, DARK_GRAY, 650, P1_SETTINGS_Y-35)
 
-                add_text('PRUNING: ', 25, DARK_GRAY, 545, P1_SETTINGS_Y-5, 
+                add_text('PRUNING: ', 25, DARK_GRAY, 545, P1_SETTINGS_Y-5,
                     center=False, bold=False)
                 if self.pruning_on:
                     add_text('ON', 22, DARK_GRAY, 700, P1_SETTINGS_Y+11)
@@ -214,7 +214,7 @@ class PlayerSettings(object):
                     add_text('ON', 22, LIGHT_GRAY, 700, P1_SETTINGS_Y+11)
                     add_text('OFF', 22, DARK_GRAY, 750, P1_SETTINGS_Y+11)
 
-                add_text('DEPTH: ', 25, DARK_GRAY, 545, P1_SETTINGS_Y+45, 
+                add_text('DEPTH: ', 25, DARK_GRAY, 545, P1_SETTINGS_Y+45,
                     center=False, bold=False)
                 add_text(str(self.depth), 28, DARK_GRAY, 670, P1_SETTINGS_Y+60)
                 add_text('+  -', 40, DARK_GRAY, 720, P1_SETTINGS_Y+60)
@@ -238,7 +238,7 @@ class PlayerSettings(object):
             else:
                 add_text('START!', 38, WHITE, CENTER_X, WINDOW_HEIGHT - 100)
 
-    """ Returns a list. The first and second indices are dicts representing 
+    """ Returns a list. The first and second indices are dicts representing
     player 1 and player 2 respectively, each with the following key-value pairs:
         algorithm:  Algorithm that was chosen. Either NAIVE or MINIMAX.
         depth:      Maximum depth (if minimax was chosen)
@@ -342,13 +342,13 @@ class GameScreen(object):
             elif p1['algorithm'] == NAIVE:
                 self.player1 = RandBot(PLAYER_1_COLOR, 1)
             else:
-                self.player1 = MinimaxBot(PLAYER_1_COLOR, 1, pruning=p1['pruning'], 
+                self.player1 = MinimaxBot(PLAYER_1_COLOR, 1, pruning=p1['pruning'],
                                 depth=p1['depth'], heuristic=p1['heuristic'])
-            
+
             if p2['algorithm'] == NAIVE:
                 self.player2 = RandBot(PLAYER_2_COLOR, 2)
             else:
-                self.player2 = MinimaxBot(PLAYER_2_COLOR, 2, pruning=p2['pruning'], 
+                self.player2 = MinimaxBot(PLAYER_2_COLOR, 2, pruning=p2['pruning'],
                                 depth=p2['depth'], heuristic=p2['heuristic'])
         self.total_games += 1
 
@@ -360,7 +360,7 @@ class GameScreen(object):
             if p1_lost and self.is_player1_turn:
                 self.num_p2_wins += 1
                 self.draw_stats()
-                return P2_WIN 
+                return P2_WIN
             elif p2_lost and not self.is_player1_turn:
                 self.num_p1_wins += 1
                 self.draw_stats()
@@ -372,7 +372,7 @@ class GameScreen(object):
             return IN_PROGRESS
 
     def draw_stats(self):
-        pygame.draw.rect(DISPLAYSURF, DARK_GRAY, Rect(0, GAME_HEIGHT, 
+        pygame.draw.rect(DISPLAYSURF, DARK_GRAY, Rect(0, GAME_HEIGHT,
             GAME_WIDTH, GAME_HEIGHT))
 
         p1_wins = 'PLAYER 1 WINS: ' + str(self.num_p1_wins)
@@ -419,7 +419,7 @@ class GameScreen(object):
         if p1_lost or p2_lost:
             if p1_lost and self.is_player1_turn:
                 self.num_p2_wins += 1
-                return P2_WIN 
+                return P2_WIN
             elif p2_lost and not self.is_player1_turn:
                 self.num_p1_wins += 1
                 return P1_WIN
@@ -450,7 +450,7 @@ class RematchOptions(object):
         elif outcome == P2_WIN:
             add_text('PLAYER 2 WINS', 86, PLAYER_2_COLOR, CENTER_X, CENTER_Y-100)
         add_text('Would you like a rematch?', 40, DARK_GRAY, CENTER_X, CENTER_Y-25, bold=False)
-        
+
         add_text('YES', 40, DARK_GRAY, CENTER_X - 130, CENTER_Y + 40)
         add_text('NO', 40, DARK_GRAY, CENTER_X + 130, CENTER_Y + 40)
 
@@ -477,11 +477,11 @@ class ModeSelect(object):
 
     def draw(self):
         add_text('GAME MODE', 70, PURPLE, CENTER_X, CENTER_Y - 120)
-        add_text('Play against a bot or view two bots play a match in real-time!', 
+        add_text('Play against a bot or view two bots play a match in real-time!',
             20, DARK_GRAY, CENTER_X, CENTER_Y - 75, bold=False)
 
         add_text('TOURNAMENT MODE', 60, RED, CENTER_X, CENTER_Y + 80)
-        add_text('See how certain bots fare after a specified number of matches.', 
+        add_text('See how certain bots fare after a specified number of matches.',
             20, DARK_GRAY, CENTER_X, CENTER_Y + 125, bold=False)
 
     def handle_click(self, x, y):
@@ -547,7 +547,7 @@ class Tournament(object):
             add_text('NAIVE BOT', 30, LIGHT_GRAY, 350, P1_SETTINGS_Y-35)
             add_text('MINIMAX BOT', 30, DARK_GRAY, 650, P1_SETTINGS_Y-35)
 
-            add_text('PRUNING: ', 25, DARK_GRAY, 545, P1_SETTINGS_Y-5, 
+            add_text('PRUNING: ', 25, DARK_GRAY, 545, P1_SETTINGS_Y-5,
                 center=False, bold=False)
             if self.pruning_on:
                 add_text('ON', 22, DARK_GRAY, 700, P1_SETTINGS_Y+11)
@@ -556,7 +556,7 @@ class Tournament(object):
                 add_text('ON', 22, LIGHT_GRAY, 700, P1_SETTINGS_Y+11)
                 add_text('OFF', 22, DARK_GRAY, 750, P1_SETTINGS_Y+11)
 
-            add_text('DEPTH: ', 25, DARK_GRAY, 545, P1_SETTINGS_Y+45, 
+            add_text('DEPTH: ', 25, DARK_GRAY, 545, P1_SETTINGS_Y+45,
                 center=False, bold=False)
             add_text(str(self.depth), 28, DARK_GRAY, 670, P1_SETTINGS_Y+60)
             add_text('+  -', 40, DARK_GRAY, 720, P1_SETTINGS_Y+60)
@@ -582,9 +582,9 @@ class Tournament(object):
             add_text('NEXT BOT', 38, WHITE, CENTER_X, WINDOW_HEIGHT - 100)
         else:
             add_text('START!', 38, WHITE, CENTER_X, WINDOW_HEIGHT - 100)
-            add_text('Number of matches: ', 25, DARK_GRAY, 220, P2_SETTINGS_Y+70, 
+            add_text('Number of matches: ', 25, DARK_GRAY, 220, P2_SETTINGS_Y+70,
                 center=False, bold=False)
-            add_text(str(self.match_numbers[self.match_index]), 28, DARK_GRAY, 
+            add_text(str(self.match_numbers[self.match_index]), 28, DARK_GRAY,
                 490, P2_SETTINGS_Y+85)
             add_text('+  -', 40, DARK_GRAY, 540, P2_SETTINGS_Y+85)
 
@@ -597,7 +597,7 @@ class Tournament(object):
         self.pruning_on = True
         self.depth = 5
 
-    """ Returns a list. The first and second indices are dicts representing 
+    """ Returns a list. The first and second indices are dicts representing
     player 1 and player 2 respectively, each with the following key-value pairs:
         algorithm:  Algorithm that was chosen. Either NAIVE or MINIMAX.
         depth:      Maximum depth (if minimax was chosen)

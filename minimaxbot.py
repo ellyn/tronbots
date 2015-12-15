@@ -47,11 +47,17 @@ class MinimaxBot(Player):
 
     def minimax(self, opponent, depth):
         start_timer = timeit.default_timer()
-        scores = map(lambda move:
-            self.min_play(self.clone(direction=move), opponent, depth+1, LOSE, WIN),
-            range(4))
+        scores = [LOSE]*4
+        max_score = LOSE
+        for move in range(4):
+            if not self.direction_valid(move):
+                continue
+            scores[move] = self.min_play(self.clone(direction=move), opponent, depth+1, max_score, WIN)
+            max_score = max(max_score, scores[move])
+            if self.pruning and max_score >= WIN:
+                break
         total_time = timeit.default_timer() - start_timer
-        print total_time
+        #print total_time
         return scores.index(max(scores)) # Move with highest score
 
     def min_play(self, player, opponent, depth, alpha, beta):

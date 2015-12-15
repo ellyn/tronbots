@@ -153,13 +153,13 @@ def tournament():
 def tournament_results():
     global STATE
     while True:
-        if len(pygame.event.get(QUIT)) > 0:
-            end_game()
-        if (len(pygame.event.get(KEYDOWN)) != 0 or
-            len(pygame.event.get(MOUSEBUTTONDOWN)) != 0):
-            break
-    pygame.event.clear()
-    STATE = MODE_SELECT
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                end_game()
+            elif event.type == KEYDOWN and event.key == K_RETURN:
+                pygame.event.clear()
+                STATE = MODE_SELECT
+                return
 
 
 

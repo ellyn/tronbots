@@ -66,9 +66,7 @@ def dijkstra(state, head):
     dists[:] = np.inf
     visited = np.zeros((GAME_HEIGHT/CELL_WIDTH, GAME_WIDTH/CELL_WIDTH))
     dists[hr,hc] = 0.0
-    #print 'running dijkstra'
     ns = grid_neighbors(hr,hc)
-    #print 'init neighbors: ' + str(ns)
     for n in ns:
         r,c = n
         dists[r,c] = 1
@@ -76,9 +74,7 @@ def dijkstra(state, head):
 
     while len(q) != 0:
         cr,cc = q.popleft()
-        #print 'popped: ' + str(cr) + ',' + str(cc)
         ndist = dists[cr,cc] + 1
-        #print 'ndist: ' + str(ndist)
         for n in grid_neighbors(cr,cc):
             nr,nc = n
 
