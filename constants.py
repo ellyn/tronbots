@@ -22,7 +22,7 @@ GREEN       = pygame.Color(165, 189, 89)
 PURPLE 		= pygame.Color(171, 139, 182)
 
 # Frames per second
-FPS = 80
+FPS = 24
 
 # Game states
 START_SCREEN    = 0
@@ -81,3 +81,9 @@ KEY_DIRECTION = {
 # Square Labels
 FRIENDLY = 1
 OPPONENT = 2
+
+WIN = 1
+LOSE = -1
+
+#Heuristics
+SIMPLE_RATIO = 0

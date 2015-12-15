@@ -8,12 +8,25 @@ class Player(object):
     def __init__(self, color, player_num):
         self.color = color
         self.direction = UP
+        self.player_num = player_num
         self.move_counter = 0 # Keeps track of movement to regulate growth rate
         loc = P1_LOC if player_num == 1 else P2_LOC
         self.segments = [Rect(loc[0], loc[1], CELL_WIDTH, CELL_WIDTH)]
 
+    def direction_valid(self,direction):
+        if (direction == UP and self.direction == DOWN):
+            return False
+        if (direction == LEFT and self.direction == RIGHT):
+            return False
+        if (direction == DOWN and self.direction == UP):
+            return False
+        if (direction == RIGHT and self.direction == LEFT):
+            return False
+        return True
+
     def set_direction(self, direction):
-        self.direction = direction
+        if self.direction_valid(direction):
+            self.direction = direction
 
     def set_color(self, color):
         self.color = color

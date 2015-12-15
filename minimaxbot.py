@@ -1,5 +1,6 @@
 from player import *
 from constants import *
+import timeit
 
 class MinimaxBot(Player):
     """ This bot uses the well-known Minimax algorithm for its strategy,
@@ -8,16 +9,18 @@ class MinimaxBot(Player):
     We use the following heuristic function to evaluate states:
     <To be done>
 
-    For the leaves of the game tree, we consider win states to be 100
-    and losses to be -100.
+    For the leaves of the game tree, we consider win states to be 1
+    and losses to be -1.
     """
 
-    def __init__(self, color, player_num):
+    def __init__(self, color, player_num, pruning=True, depth=4, heuristic=SIMPLE_RATIO):
         Player.__init__(self, color, player_num)
-        self.max_depth = 5 # Max depth to explore for game tree
+        self.heuristic = heuristic
+        self.pruning = pruning
+        self.max_depth = depth # Max depth to explore for game tree
 
     def choose_move(self, other_player):
-        self.direction = self.minimax(other_player, 0)
+        self.set_direction(self.minimax(other_player, 0))
         self.move()
 
     def get_safe_directions(self, player1, player2):
@@ -36,50 +39,74 @@ class MinimaxBot(Player):
 
         return safe_directions
 
-    def heuristic(self, player, other_player):
+    def simple_ratio_heuristic(self, player, opponent):
         #state = player.get_state(other_player)
         #head = player.segments[0].topleft
         #hx,hy = head[0]/CELL_WIDTH, head[1]/CELL_WIDTH
         #assert state[hy,hx] == FRIENDLY, "Head of player not friendly"
-        return len(self.get_safe_directions(player, other_player)) /
-            float(len(self.get_safe_directions(other_player, player)))
+        player_safe_count = len(self.get_safe_directions(player, opponent))
+        opponent_safe_count = len(self.get_safe_directions(opponent, player))
+        if player_safe_count == 0:
+            return LOSE
+        if opponent_safe_count == 0:
+            return WIN
+        return (player_safe_count - opponent_safe_count) / 3.0
 
+    def evaluate_board(self, player, opponent, turn):
+        player_lost = player.has_collided(opponent)
+        opponent_lost = opponent.has_collided(player)
+        if player_lost and opponent_lost:
+            return WIN if turn == FRIENDLY else LOSE
+        if turn == FRIENDLY and opponent_lost:
+            return WIN
+        if turn == OPPONENT and player_lost:
+            return LOSE
+        if self.heuristic == SIMPLE_RATIO:
+            return self.simple_ratio_heuristic(player, opponent)
+        raise Exception("Heuristic Not Implemented")
 
-    def evaluate_board(self, player, other_player, own_turn):
-        player_lost = player.has_collided(other_player)
-        other_player_lost = other_player.has_collided(player)
-        if own_turn and player_lost:
-            return -100
-        elif not own_turn and other_player_lost:
-            return 100
-        elif player_lost or other_player_lost:
-            raise Exception('Evaluation logic error')
-
-
-
-
-        # Add heuristic logic here
-        return self.heuristic(player, other_player)
-
-    def minimax(self, other_player, depth):
+    def minimax(self, opponent, depth):
+        start_timer = timeit.default_timer()
         scores = map(lambda move:
-            self.min_play(self.clone(direction=move), other_player, depth+1), 
+            self.min_play(self.clone(direction=move), opponent, depth+1, LOSE, WIN),
             range(4))
+        total_time = timeit.default_timer() - start_timer
+        print total_time
         return scores.index(max(scores)) # Move with highest score
 
-    def min_play(self, player, other_player, depth):
-        outcome = self.evaluate_board(player, other_player, True)
-        if outcome == 100 or outcome == -100 or depth == self.max_depth:
+    def min_play(self, player, opponent, depth, alpha, beta):
+        outcome = self.evaluate_board(player, opponent, OPPONENT)
+        if outcome == WIN or outcome == LOSE or depth == self.max_depth:
+            return outcome
+        min_score = WIN
+        for move in range(4):
+            if not opponent.direction_valid(move):
+                continue
+            cloned_opponent = self.clone(player=opponent, direction=move)
+            cur_val = self.max_play(player, cloned_opponent, depth+1, alpha, beta)
+            min_score = min(cur_val, min_score)
+            beta = min(beta, min_score)
+            if self.pruning and beta <= alpha:
+                break
+            if min_score == WIN:
+                return WIN
+        return min_score
+
+    def max_play(self, player, opponent, depth, alpha, beta):
+        outcome = self.evaluate_board(player, opponent, FRIENDLY)
+        if outcome == WIN or outcome == LOSE or depth == self.max_depth:
             return outcome
 
-        return min(map(lambda move:
-            self.max_play(player, self.clone(player=other_player, direction=move), depth+1),
-            range(4)))
-
-    def max_play(self, player, other_player, depth):
-        outcome = self.evaluate_board(player, other_player, False)
-        if outcome == 100 or outcome == -100 or depth == self.max_depth:
-            return outcome
-        return max(map(lambda move:
-            self.min_play(self.clone(player=player, direction=move), other_player, depth+1),
-            range(4)))
+        max_score = LOSE
+        for move in range(4):
+            if (not player.direction_valid(move)):
+                continue
+            cloned_player = self.clone(player=player, direction=move)
+            cur_val = self.min_play(cloned_player, opponent, depth+1, alpha, beta)
+            max_score = max(cur_val, max_score)
+            alpha = max(max_score, alpha)
+            if self.pruning and beta <= alpha:
+                break
+            if max_score == WIN:
+                return WIN
+        return max_score
