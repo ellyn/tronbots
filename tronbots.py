@@ -7,6 +7,8 @@ def main():
     while True:
         if STATE == START_SCREEN:
             start_screen()
+        elif STATE == MODE_SELECT:
+            mode_select()
         elif STATE == PLAYER_SETTINGS:
             player_settings()
         elif STATE == GAME_SCREEN:
@@ -15,7 +17,12 @@ def main():
             rematch_options()
         elif STATE == END_GAME:
             end_game()
+        elif STATE == TOURNAMENT:
+            tournament()
+        elif STATE == TOURN_RESULTS:
+            tournament_results()
         else:
+            print STATE
             raise Exception('Invalid game state')
 
 def initialize_game():
@@ -42,7 +49,7 @@ def start_screen():
             len(pygame.event.get(MOUSEBUTTONDOWN)) != 0):
             break
     pygame.event.clear()
-    STATE = PLAYER_SETTINGS
+    STATE = MODE_SELECT
 
 def player_settings():
     global STATE, P1_HUMAN
@@ -95,6 +102,62 @@ def rematch_options():
             elif event.type == KEYDOWN and event.key == K_RETURN:
                 STATE = GAME_SCREEN
                 return
+
+def mode_select():
+    global STATE
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                end_game()
+            elif event.type == MOUSEBUTTONDOWN:
+                x,y = event.pos[0], event.pos[1]
+                next_state = GAMEVIEW.modeselect.handle_click(x,y)
+                if next_state != -1:
+                    STATE = next_state
+                    return
+        GAMEVIEW.draw_modeselection()
+        FPSCLOCK.tick(FPS)
+
+def play_tournament(bot_info):
+    global STATE
+    num_matches = bot_info[2]
+    game_screen = GameScreen()
+    for i in range(num_matches):
+        game_screen.setup_game(bot_info[:2])
+        outcome = game_screen.play_turn()
+        while outcome == IN_PROGRESS:
+            outcome = game_screen.play_turn()
+    GAMEVIEW.draw_tournament_results(game_screen.get_results())
+    STATE = TOURN_RESULTS
+
+
+def tournament():
+    global STATE
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                end_game()
+            elif event.type == MOUSEBUTTONDOWN:
+                x,y = event.pos[0], event.pos[1]
+                bot_info = GAMEVIEW.tournament.handle_click(x,y)
+                if bot_info != None:
+                    GAMEVIEW.draw_tournament()
+                    play_tournament(bot_info)
+                    return
+        GAMEVIEW.draw_tournament()
+        FPSCLOCK.tick(FPS)
+
+def tournament_results():
+    global STATE
+    while True:
+        if len(pygame.event.get(QUIT)) > 0:
+            end_game()
+        if (len(pygame.event.get(KEYDOWN)) != 0 or 
+            len(pygame.event.get(MOUSEBUTTONDOWN)) != 0):
+            break
+    pygame.event.clear()
+    STATE = MODE_SELECT
+
 
 
 if __name__ == '__main__':
