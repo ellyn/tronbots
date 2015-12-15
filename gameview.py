@@ -35,6 +35,8 @@ class GameView(object):
         self.playersettings = PlayerSettings()
         self._gamescreen = GameScreen()
         self.rematchoptions = RematchOptions()
+        self.modeselect = ModeSelect()
+        self.tournament = Tournament()
 
     def draw_startscreen(self):
         DISPLAYSURF.fill(OFF_WHITE)
@@ -63,6 +65,28 @@ class GameView(object):
 
     def draw_rematchoptions(self, outcome):
         self.rematchoptions.draw(outcome)
+        pygame.display.update()
+
+    def draw_modeselection(self):
+        DISPLAYSURF.fill(OFF_WHITE)
+        self.modeselect.draw()
+        pygame.display.update()
+
+    def draw_tournament(self):
+        DISPLAYSURF.fill(OFF_WHITE)
+        self.tournament.draw()
+        pygame.display.update()
+
+    def draw_tournament_results(self, results):
+        DISPLAYSURF.fill(OFF_WHITE)
+        add_text('TOURNAMENT RESULTS:', 50, DARK_GRAY, CENTER_X, CENTER_Y - 80)
+
+        p1_wins = 'PLAYER 1 WINS: ' + str(results[0])
+        add_text(p1_wins, 36, PLAYER_1_COLOR, CENTER_X, CENTER_Y - 20)
+
+        p2_wins = 'PLAYER 2 WINS: ' + str(results[1])
+        add_text(p2_wins, 36, PLAYER_2_COLOR, CENTER_X, CENTER_Y + 30)
+
         pygame.display.update()
 
 
@@ -140,9 +164,25 @@ class GameScreen(object):
         self.game_outcome = None
         self.is_player1_turn = True
 
-    def setup_game(self):
-        self.player1 = Player(PLAYER_1_COLOR, 1)
-        self.player2 = MinimaxBot(PLAYER_2_COLOR, 2)#RandBot(PLAYER_2_COLOR, 2)
+    def setup_game(self, player_info=None):
+        if player_info == None:
+            self.player1 = Player(PLAYER_1_COLOR, 1)
+            self.player2 = MinimaxBot(PLAYER_2_COLOR, 2)
+        else:
+            p1 = player_info[0]
+            p2 = player_info[1]
+
+            if p1['algorithm'] == NAIVE:
+                self.player1 = RandBot(PLAYER_1_COLOR, 1)
+            else:
+                self.player1 = MinimaxBot(PLAYER_1_COLOR, 1, pruning=p1['pruning'], 
+                                depth=p1['depth'], heuristic=p1['heuristic'])
+            
+            if p2['algorithm'] == NAIVE:
+                self.player2 = RandBot(PLAYER_2_COLOR, 2)
+            else:
+                self.player2 = MinimaxBot(PLAYER_2_COLOR, 2, pruning=p1['pruning'], 
+                                depth=p1['depth'], heuristic=p1['heuristic'])
         self.total_games += 1
 
     def check_collisions(self):
@@ -199,6 +239,30 @@ class GameScreen(object):
         self.draw_player2()
         self.draw_stats()
 
+    # Used for tournament mode. Plays a turn of the game.
+    # Returns outcome of the game.
+    def play_turn(self):
+        if self.is_player1_turn:
+            self.player1.choose_move(self.player2)
+        else:
+            self.player2.choose_move(self.player1)
+
+        p1_lost = self.player1.has_collided(self.player2)
+        p2_lost = self.player2.has_collided(self.player1)
+        if p1_lost or p2_lost:
+            if p1_lost and self.is_player1_turn:
+                self.num_p2_wins += 1
+                return P2_WIN 
+            elif p2_lost and not self.is_player1_turn:
+                self.num_p1_wins += 1
+                return P1_WIN
+        else:
+            self.is_player1_turn = not self.is_player1_turn
+            return IN_PROGRESS
+
+    def get_results(self):
+        return [self.num_p1_wins, self.num_p2_wins]
+
 
 class RematchOptions(object):
     def __init__(self):
@@ -226,3 +290,187 @@ class RematchOptions(object):
         if self.no.collidepoint(x,y):
             return END_GAME
         return -1
+
+
+class ModeSelect(object):
+    def __init__(self):
+        self.game_mode = Rect(0, 0, 800, 100)
+        self.game_mode.center = (CENTER_X, CENTER_Y - 100)
+
+        self.tournament_mode = Rect(0, 0, 800, 100)
+        self.tournament_mode.center = (CENTER_X, CENTER_Y + 100)
+
+    def draw(self):
+        add_text('GAME MODE', 70, PURPLE, CENTER_X, CENTER_Y - 120)
+        add_text('Play against a bot or view two bots play a match in real-time!', 
+            20, DARK_GRAY, CENTER_X, CENTER_Y - 75, bold=False)
+
+        add_text('TOURNAMENT MODE', 60, RED, CENTER_X, CENTER_Y + 80)
+        add_text('See how certain bots fare after a specified number of matches.', 
+            20, DARK_GRAY, CENTER_X, CENTER_Y + 125, bold=False)
+
+    def handle_click(self, x, y):
+        if self.game_mode.collidepoint(x,y):
+            return PLAYER_SETTINGS
+        if self.tournament_mode.collidepoint(x,y):
+            return TOURNAMENT
+        return -1
+
+
+class Tournament(object):
+    def __init__(self):
+        self.start_button = Rect(0, 0, 280, 70)
+        self.start_button.center = (CENTER_X, WINDOW_HEIGHT - 100)
+
+        self.naive = Rect(250, P1_SETTINGS_Y-50, 200, 30)
+        self.minimax = Rect(540, P1_SETTINGS_Y-50, 220, 30)
+
+        self.pruning_on_button =  Rect(680, P1_SETTINGS_Y-5, 40, 30)
+        self.pruning_off_button = Rect(725, P1_SETTINGS_Y-5, 50, 30)
+
+        self.depth_plus = Rect(690, P1_SETTINGS_Y+45, 30, 30)
+        self.depth_minus = Rect(725, P1_SETTINGS_Y+45, 30, 30)
+
+        self.ratio = Rect(250, P2_SETTINGS_Y, 110, 30)
+        self.chamber = Rect(410, P2_SETTINGS_Y, 170, 30)
+        self.voronoi = Rect(610, P2_SETTINGS_Y, 160, 30)
+
+        self.match_plus = Rect(510, P2_SETTINGS_Y+70, 30, 30)
+        self.match_minus = Rect(545, P2_SETTINGS_Y+70, 30, 30)
+
+        self.heuristic_selected = SIMPLE_RATIO
+        self.algorithm_selected = MINIMAX
+        self.pruning_on = True
+        self.depth = 5
+
+        self.match_index = 0
+        self.match_numbers = [1, 2, 5, 25, 50]
+
+        self.first_bot_select = True
+        self.bot_info = []
+
+        self.selection_complete = False
+
+    def draw(self):
+        pygame.draw.rect(DISPLAYSURF, GRAY, self.start_button)
+        if self.first_bot_select:
+            add_text('Set settings for Bot 1', 40, DARK_GRAY, CENTER_X, 60)
+        else:
+            add_text('Set settings for Bot 2', 40, DARK_GRAY, CENTER_X, 60)
+
+        add_text('ALGORITHM:', 25, BLUE, 30, P1_SETTINGS_Y-50, center=False)
+        add_text('HEURISTIC:', 25, ORANGE, 30, P2_SETTINGS_Y, center=False)
+
+        if self.algorithm_selected == NAIVE:
+            add_text('NAIVE BOT', 30, DARK_GRAY, 350, P1_SETTINGS_Y-35)
+            add_text('MINIMAX BOT', 30, LIGHT_GRAY, 650, P1_SETTINGS_Y-35)
+
+            add_text('RATIO', 30, LIGHT_GRAY, 300, P2_SETTINGS_Y+15)
+            add_text('CHAMBER', 30, LIGHT_GRAY, 490, P2_SETTINGS_Y+15)
+            add_text('VORONOI', 30, LIGHT_GRAY, 690, P2_SETTINGS_Y+15)
+        else:
+            add_text('NAIVE BOT', 30, LIGHT_GRAY, 350, P1_SETTINGS_Y-35)
+            add_text('MINIMAX BOT', 30, DARK_GRAY, 650, P1_SETTINGS_Y-35)
+
+            add_text('PRUNING: ', 25, DARK_GRAY, 545, P1_SETTINGS_Y-5, 
+                center=False, bold=False)
+            if self.pruning_on:
+                add_text('ON', 22, DARK_GRAY, 700, P1_SETTINGS_Y+11)
+                add_text('OFF', 22, LIGHT_GRAY, 750, P1_SETTINGS_Y+11)
+            else:
+                add_text('ON', 22, LIGHT_GRAY, 700, P1_SETTINGS_Y+11)
+                add_text('OFF', 22, DARK_GRAY, 750, P1_SETTINGS_Y+11)
+
+            add_text('DEPTH: ', 25, DARK_GRAY, 545, P1_SETTINGS_Y+45, 
+                center=False, bold=False)
+            add_text(str(self.depth), 28, DARK_GRAY, 670, P1_SETTINGS_Y+60)
+            add_text('+  -', 40, DARK_GRAY, 720, P1_SETTINGS_Y+60)
+
+            if self.heuristic_selected == SIMPLE_RATIO:
+                add_text('RATIO', 30, DARK_GRAY, 300, P2_SETTINGS_Y+15)
+                add_text('CHAMBER', 30, LIGHT_GRAY, 490, P2_SETTINGS_Y+15)
+                add_text('VORONOI', 30, LIGHT_GRAY, 690, P2_SETTINGS_Y+15)
+            elif self.heuristic_selected == CHAMBER:
+                add_text('RATIO', 30, LIGHT_GRAY, 300, P2_SETTINGS_Y+15)
+                add_text('CHAMBER', 30, DARK_GRAY, 490, P2_SETTINGS_Y+15)
+                add_text('VORONOI', 30, LIGHT_GRAY, 690, P2_SETTINGS_Y+15)
+            else:
+                add_text('RATIO', 30, LIGHT_GRAY, 300, P2_SETTINGS_Y+15)
+                add_text('CHAMBER', 30, LIGHT_GRAY, 490, P2_SETTINGS_Y+15)
+                add_text('VORONOI', 30, DARK_GRAY, 690, P2_SETTINGS_Y+15)
+
+        if self.selection_complete:
+            pygame.draw.rect(DISPLAYSURF, GRAY, self.start_button)
+        else:
+            pygame.draw.rect(DISPLAYSURF, GREEN, self.start_button)
+        if self.first_bot_select:
+            add_text('NEXT BOT', 38, WHITE, CENTER_X, WINDOW_HEIGHT - 100)
+        else:
+            add_text('START!', 38, WHITE, CENTER_X, WINDOW_HEIGHT - 100)
+            add_text('Number of matches: ', 25, DARK_GRAY, 220, P2_SETTINGS_Y+70, 
+                center=False, bold=False)
+            add_text(str(self.match_numbers[self.match_index]), 28, DARK_GRAY, 
+                490, P2_SETTINGS_Y+85)
+            add_text('+  -', 40, DARK_GRAY, 540, P2_SETTINGS_Y+85)
+
+    """ Returns a list. The first and second indices are dicts representing 
+    player 1 and player 2 respectively, each with the following key-value pairs:
+        algorithm:  Algorithm that was chosen. Either NAIVE or MINIMAX.
+        depth:      Maximum depth (if minimax was chosen)
+        pruning:    True if alpha-beta pruning is on (if minimax was chosen)
+        heurustic:  Heuristic that was chosen (if minimax was chosen)
+
+    The third index is the number of matches to play.
+
+    Returns None if no state change.
+    """
+    def handle_click(self, x, y):
+        if self.start_button.collidepoint(x,y):
+            info = {'algorithm': self.algorithm_selected}
+            if self.algorithm_selected == MINIMAX:
+                info['depth'] = self.depth
+                info['pruning'] = self.pruning_on
+                info['heuristic'] = self.heuristic_selected
+            self.bot_info.append(info)
+            if self.first_bot_select:
+                self.first_bot_select = False
+                self.heuristic_selected = SIMPLE_RATIO
+                self.algorithm_selected = MINIMAX
+                self.pruning_on = True
+                self.depth = 5
+                return None
+            else:
+                self.bot_info.append(self.match_numbers[self.match_index])
+                self.selection_complete = True
+                return self.bot_info
+
+        if not self.first_bot_select:
+            if self.match_plus.collidepoint(x,y):
+                if self.match_index < len(self.match_numbers) - 1:
+                    self.match_index += 1
+            elif self.match_minus.collidepoint(x,y):
+                if self.match_index > 0:
+                    self.match_index -= 1
+
+        if self.naive.collidepoint(x,y):
+            self.algorithm_selected = NAIVE
+        elif self.minimax.collidepoint(x,y):
+            self.algorithm_selected = MINIMAX
+        elif self.algorithm_selected == MINIMAX:
+            if self.pruning_on_button.collidepoint(x,y):
+                self.pruning_on = True
+            elif self.pruning_off_button.collidepoint(x,y):
+                self.pruning_on = False
+            elif self.depth_plus.collidepoint(x,y):
+                self.depth += 1
+            elif self.depth_minus.collidepoint(x,y) and self.depth > 1:
+                self.depth -= 1
+
+            elif self.ratio.collidepoint(x,y):
+                self.heuristic_selected = SIMPLE_RATIO
+            elif self.chamber.collidepoint(x,y):
+                self.heuristic_selected = CHAMBER
+            elif self.voronoi.collidepoint(x,y):
+                self.heuristic_selected = VORONOI
+
+        return None
