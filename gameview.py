@@ -87,6 +87,9 @@ class GameView(object):
         p2_wins = 'PLAYER 2 WINS: ' + str(results[1])
         add_text(p2_wins, 36, PLAYER_2_COLOR, CENTER_X, CENTER_Y + 30)
 
+        add_text('Press any key to return to mode selection!', 29, GRAY, CENTER_X, 
+            CENTER_Y + 110, bold=False)
+
         pygame.display.update()
 
 
