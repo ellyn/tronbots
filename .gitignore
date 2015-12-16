@@ -1,2 +1,4 @@
 *.pyc
 *.DS_Store
+cython_ver/build/
+*.so
