@@ -28,7 +28,7 @@ def main():
 def initialize_game():
     global GAMEVIEW, FPSCLOCK, STATE
     pygame.init()
-    pygame.mixer.music.load('sounds' + os.sep + '572768_Section-B---Demo-2.mp3')
+    pygame.mixer.music.load('sounds' + os.sep + 'theme.ogg')
     pygame.mixer.music.play(-1)
 
     GAMEVIEW = GameView()
