@@ -19,8 +19,8 @@ class RandBot(Player):
             possible_head = Rect(x, y, CELL_WIDTH, CELL_WIDTH)
             if self.has_collided(other_player, head=possible_head):
                 safe_directions.remove(direction)
-        
-        # Randomly choose new direction from safe directions 
+
+        # Randomly choose new direction from safe directions
         # if current direction is unsafe
         if self.direction not in safe_directions and safe_directions != []:
             self.direction = random.choice(safe_directions)

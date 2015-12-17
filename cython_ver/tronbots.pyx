@@ -1,6 +1,8 @@
 import pygame, sys, os
 from constants import *
 from gameview import *
+import math
+import timeit
 
 def main():
     initialize_game()
@@ -120,18 +122,128 @@ def mode_select():
         GAMEVIEW.draw_modeselection()
         FPSCLOCK.tick(FPS)
 
-def play_tournament(bot_info):
+AUTO_MODE = True
+def str_of_bot(bot):
+    s = ''
+    alg = bot['algorithm']
+    if (alg == HUMAN):
+        s += 'HUMAN,N/A,N/A,N/A'
+    if (alg == NAIVE):
+        s += 'NAIVE,N/A,N/A,N/A'
+    else:
+        s += 'MINIMAX,'
+        if (bot['pruning']):
+            s += 'T,'
+        else:
+            s += 'F,'
+        s += str(bot['depth']) + ','
+        if bot['heuristic'] == SIMPLE_RATIO:
+            s += 'RATIO'
+        if bot['heuristic'] == VORONOI:
+            s += 'VORONOI'
+        if bot['heuristic'] == CHAMBER:
+            s += 'CHAMBER'
+    return s
+
+def mean(l):
+    s = reduce(lambda acc,v: acc + v, l)
+    return s/float(len(l))
+
+def pop_stdev(l):
+    m = mean(l)
+    devs = [(x - m)**2 for x in l]
+    var = mean(devs)
+    return math.sqrt(var)
+
+def str_of_results(results):
+    s = ''
+    for metric in results:
+        s += str(mean(metric)) + ',' + str(pop_stdev(metric)) + ','
+    return s[:len(s)-1]
+
+def str_of_bots_results(results,bots):
+    p1w = results[0][0]
+    p2w = results[0][1]
+    p1t = str_of_results(results[3:4])
+    p2t = str_of_results(results[4:])
+    rem_results = str_of_results(results[1:3])
+    p1 = str_of_bot(bots[0])
+    p2 = str_of_bot(bots[1])
+    return p1+','+str(p1w)+','+p1t+','+p2+','+str(p2w)+','+p2t+','+rem_results
+
+def generate_csv(num_matches=0,prunes=[],depths=[],heur=[]):
+    #player = [(b,h,)
+    if (num_matches == 0):
+        num_matches = 1
+    if (prunes == []):
+        prunes = [True, False]
+    if (depths == []):
+        depths = [1,2]
+    if heur == []:
+        heur = [SIMPLE_RATIO, VORONOI, CHAMBER]
+
+    p1s = [{'algorithm':MINIMAX,'pruning':p,'depth':d,'heuristic':h}
+        for p in prunes for d in depths for h in heur]
+    p1s += [{'algorithm':NAIVE}]
+    p2s = [{'algorithm':MINIMAX,'pruning':p,'depth':d,'heuristic':h}
+        for p in prunes for d in depths for h in heur]
+    p2s += [{'algorithm':NAIVE}]
+
+    f = open("full_tournament_results.csv", 'a')
+    f.write("Bot #1 Type,Pruning,Depth,Heuristic,Wins,Mean Turn Time,\
+    Stdev Turn Time,Bot #2 Type,Pruning,Depth,Heuristic,Wins,Mean Turn Time, Stdev Turn Time,\
+    Mean # Turns/Match,Stdev # Rounds/Match,Mean Sec/Match, Stdev Sec/Match\n")
+    f.close()
+    i = 0
+    for p1 in p1s:
+        for p2 in p2s:
+            i += 1
+            print "TOURNAMENT: " + str(i) + " of " + str(len(p1s)*len(p2s))
+            results = play_tournament([p1,p2,num_matches], False)
+            f = open("full_tournament_results.csv", 'a')
+            f.write(str_of_bots_results(results,[p1,p2])+'\n')
+            f.close()
+
+
+
+def play_tournament(bot_info, write_results=True):
     global STATE
     num_matches = bot_info[2]
     game_screen = GameScreen()
+    f = None
+    matchrounds = []
+    matchtimes = []
+    p1times = []
+    p2times = []
+    if (write_results):
+        f = open("tournament_results.csv", 'a')
+        f.write("Bot #1 Type,Pruning,Depth,Heuristic,Wins,Mean Turn Time,\
+        Stdev Turn Time,Bot #2 Type,Pruning,Depth,Heuristic,Wins,Mean Turn Time, Stdev Turn Time,")
+        f.write("Mean # Turns/Match,Stdev # Rounds/Match,Mean Sec/Match, Stdev Sec/Match\n")
     for i in range(num_matches):
+        print "match: " + str(i+1) + " of " + str(num_matches) + "..."
+        matchround = 1
         game_screen.setup_game(bot_info[:2])
         outcome = game_screen.play_turn()
+        matchtime = timeit.default_timer()
         while outcome == IN_PROGRESS:
+            matchround += 1
+            cturn_start = timeit.default_timer()
             outcome = game_screen.play_turn()
-    GAMEVIEW.draw_tournament_results(game_screen.get_results())
+            if game_screen.is_player1_turn:
+                p1times += [timeit.default_timer() - cturn_start]
+            else:
+                p2times += [timeit.default_timer() - cturn_start]
+        matchrounds += [matchround]
+        matchtimes += [timeit.default_timer() - matchtime]
+    score = game_screen.get_results()
+    results = [score,matchrounds,matchtimes,p1times,p2times]
+    if (write_results):
+        f.write(str_of_bots_results(results,bot_info[:2])+'\n')
+        f.close()
+    GAMEVIEW.draw_tournament_results(score)
     STATE = TOURN_RESULTS
-
+    return results
 
 def tournament():
     global STATE
@@ -145,7 +257,10 @@ def tournament():
                 bot_info = GAMEVIEW.tournament.handle_click(x,y)
                 if bot_info != None:
                     GAMEVIEW.draw_tournament()
-                    play_tournament(bot_info)
+                    if AUTO_MODE:
+                        generate_csv()
+                    else:
+                        play_tournament(bot_info)
                     return
         GAMEVIEW.draw_tournament()
         FPSCLOCK.tick(FPS)

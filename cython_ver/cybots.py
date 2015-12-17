@@ -1,0 +1,2 @@
+import tronbots
+tronbots.main()

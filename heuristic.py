@@ -5,6 +5,7 @@ import numpy as np
 from scipy.sparse import lil_matrix
 import sys
 sys.setrecursionlimit(2000)
+import timeit
 
 def get_safe_directions(player1, player2):
     possible_directions = range(4)
@@ -96,6 +97,7 @@ def dijkstra(state, head):
     return dists
 
 def compute_voronoi(player, opponent,state):
+    start_time = timeit.default_timer()
     head = player.segments[0].topleft
     ophead = opponent.segments[0].topleft
     player_costs = dijkstra(state, head)
@@ -112,6 +114,7 @@ def compute_voronoi(player, opponent,state):
 
     v = (pcount - opcount) / float(GAME_WIDTH*GAME_HEIGHT/(CELL_WIDTH*CELL_WIDTH))
     #print "Heuristic val: " + str(v)
+    print str(timeit.default_timer() - start_time)
     return v
 
 def voronoi_heuristic(player,opponent):

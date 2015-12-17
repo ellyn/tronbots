@@ -195,7 +195,7 @@ def generate_csv():
     for p1 in p1s:
         for p2 in p2s:
             i += 1
-            print "TOURNAMENT: " + str(i) + " of " + str(len(p1s))*len(p2s))
+            print "TOURNAMENT: " + str(i) + " of " + str(len(p1s)*len(p2s))
             results = play_tournament([p1,p2,num_matches], False)
             f = open("full_tournament_results.csv", 'a')
             f.write(str_of_bots_results(results,[p1,p2])+'\n')
