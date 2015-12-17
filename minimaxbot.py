@@ -2,6 +2,7 @@ from player import *
 from constants import *
 from heuristic import *
 import timeit
+import random
 
 
 class MinimaxBot(Player):
@@ -28,12 +29,17 @@ class MinimaxBot(Player):
     def evaluate_board(self, player, opponent, turn):
         player_lost = player.has_collided(opponent)
         opponent_lost = opponent.has_collided(player)
-        if player_lost and opponent_lost:
-            return WIN if turn == FRIENDLY else LOSE
-        if turn == FRIENDLY and opponent_lost:
-            return WIN
-        if turn == OPPONENT and player_lost:
-            return LOSE
+        if (turn == FRIENDLY):
+            if player_lost:
+                return LOSE
+            if opponent_lost:
+                return WIN
+        if (turn == OPPONENT):
+            if opponent_lost:
+                return WIN
+            if player_lost:
+                return LOSE
+
         if self.heuristic == SIMPLE_RATIO:
             return simple_ratio_heuristic(player, opponent)
 
@@ -46,10 +52,13 @@ class MinimaxBot(Player):
         raise Exception("Heuristic Not Implemented")
 
     def minimax(self, opponent, depth):
+        #print "Minimaxing for player#" + str(self.player_num)
         start_timer = timeit.default_timer()
         scores = [LOSE]*4
+        moves = [UP,DOWN,LEFT,RIGHT]
+        random.shuffle(moves)
         max_score = LOSE
-        for move in range(4):
+        for move in moves:
             if not self.direction_valid(move):
                 continue
             scores[move] = self.min_play(self.clone(direction=move), opponent, depth+1, max_score, WIN)
@@ -58,6 +67,8 @@ class MinimaxBot(Player):
                 break
         total_time = timeit.default_timer() - start_timer
         #print total_time
+        #ret = scores.index(max(scores))
+        #print "chose from: " + str(scores)
         return scores.index(max(scores)) # Move with highest score
 
     def min_play(self, player, opponent, depth, alpha, beta):

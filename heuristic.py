@@ -2,6 +2,7 @@
 from constants import *
 from collections import deque
 import numpy as np
+from scipy.sparse import lil_matrix
 import sys
 sys.setrecursionlimit(2000)
 
@@ -60,11 +61,19 @@ def grid_neighbors(row,col):
         l += [(row, col-1)]
     return l
 
+#def gen_sparse_graph():#
+#    numrows = GAME_HEIGHT/CELL_WIDTH
+#    numcols = GAME_WIDTH/CELL_WIDTH
+#    m = lil_matrix((numrows,numcols))
+#    for r in range(1, numrows-1):
+#        for c in range(1, numcols-1):
+#            m[r,c] =
+
 def dijkstra(state, head):
     hc,hr = head[0]/CELL_WIDTH, head[1]/CELL_WIDTH
-    dists = np.zeros((GAME_HEIGHT/CELL_WIDTH, GAME_WIDTH/CELL_WIDTH))
+    dists = np.zeros((GAME_ROWS, GAME_COLS))
     dists[:] = np.inf
-    visited = np.zeros((GAME_HEIGHT/CELL_WIDTH, GAME_WIDTH/CELL_WIDTH))
+    visited = np.zeros((GAME_ROWS, GAME_COLS))
     dists[hr,hc] = 0.0
     ns = grid_neighbors(hr,hc)
     for n in ns:
@@ -77,7 +86,6 @@ def dijkstra(state, head):
         ndist = dists[cr,cc] + 1
         for n in grid_neighbors(cr,cc):
             nr,nc = n
-
             if (state[nr,nc] != 0):
                 continue
             if ndist < dists[nr,nc]:
@@ -85,7 +93,6 @@ def dijkstra(state, head):
             if visited[nr,nc] == 0:
                 q.append(n)
                 visited[nr,nc] = 1
-
     return dists
 
 def compute_voronoi(player, opponent,state):
@@ -95,15 +102,17 @@ def compute_voronoi(player, opponent,state):
     op_costs = dijkstra(state, ophead)
     pcount = 0
     opcount = 0
-    for r in range(GAME_HEIGHT/CELL_WIDTH):
-        for c in range(GAME_WIDTH/CELL_WIDTH):
-            if player_costs[r,c] < op_costs[r,c]:
+    maxcost = GAME_ROWS + GAME_COLS
+    for r in range(GAME_ROWS):
+        for c in range(GAME_COLS):
+            if player_costs[r,c] < op_costs[r,c] and player_costs[r,c] <= maxcost:
                 pcount += 1
-            if op_costs[r,c] < player_costs[r,c]:
+            if op_costs[r,c] < player_costs[r,c] and op_costs[r,c] <= maxcost:
                 opcount += 1
-    if opcount == 0:
-        return WIN
-    return (pcount - opcount) / float(pcount+opcount)
+
+    v = (pcount - opcount) / float(GAME_WIDTH*GAME_HEIGHT/(CELL_WIDTH*CELL_WIDTH))
+    #print "Heuristic val: " + str(v)
+    return v
 
 def voronoi_heuristic(player,opponent):
     state = get_state(player, opponent)
