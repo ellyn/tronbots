@@ -1,5 +1,3 @@
-
-#cython: profile=True
 from constants import *
 from collections import deque
 import numpy as np
@@ -135,13 +133,20 @@ cdef inline id_mat(r,c):
 def hopcroft_tarjan(state):
     parents = np.zeros((GAME_HEIGHT/CELL_WIDTH, GAME_WIDTH/CELL_WIDTH))
     parents[:] = np.inf
-    parents[0,0] = -1
+    pr = 0
+    pc = 0
+    for r in xrange(GAME_ROWS):
+      for c in xrange(GAME_COLS):
+        if state[r,c] == 0:
+          pr = r
+          pc = c
+          parents[r,c] = -1
     visited = np.zeros((GAME_HEIGHT/CELL_WIDTH, GAME_WIDTH/CELL_WIDTH))
     low = np.zeros((GAME_HEIGHT/CELL_WIDTH, GAME_WIDTH/CELL_WIDTH))
     low[:] = np.inf
     depths = np.zeros((GAME_HEIGHT/CELL_WIDTH, GAME_WIDTH/CELL_WIDTH))
     depths[:] = np.inf
-    rec_hopcroft_tarjan(state, 0, 0, 0, depths, parents, visited, low)
+    rec_hopcroft_tarjan(state, pr, pc, 0, depths, parents, visited, low)
 
 def rec_hopcroft_tarjan(state, row, col, depth, depths, parents, visited, low):
     visited[row, col] = 1

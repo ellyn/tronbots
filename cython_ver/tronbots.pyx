@@ -171,14 +171,14 @@ def str_of_bots_results(results,bots):
     p2 = str_of_bot(bots[1])
     return p1+','+str(p1w)+','+p1t+','+p2+','+str(p2w)+','+p2t+','+rem_results
 
-def generate_csv(num_matches=0,prunes=[],depths=[],heur=[]):
+def generate_csv(num_matches=0,prunes=[],depths=[],heur=[],rec=True):
     #player = [(b,h,)
     if (num_matches == 0):
         num_matches = 1
     if (prunes == []):
         prunes = [True, False]
     if (depths == []):
-        depths = [1,2]
+        depths = [1,2,3,4]
     if heur == []:
         heur = [SIMPLE_RATIO, VORONOI, CHAMBER]
 
@@ -193,6 +193,7 @@ def generate_csv(num_matches=0,prunes=[],depths=[],heur=[]):
     f.write("Bot #1 Type,Pruning,Depth,Heuristic,Wins,Mean Turn Time,\
     Stdev Turn Time,Bot #2 Type,Pruning,Depth,Heuristic,Wins,Mean Turn Time, Stdev Turn Time,\
     Mean # Turns/Match,Stdev # Rounds/Match,Mean Sec/Match, Stdev Sec/Match\n")
+
     f.close()
     i = 0
     for p1 in p1s:
@@ -203,6 +204,8 @@ def generate_csv(num_matches=0,prunes=[],depths=[],heur=[]):
             f = open("full_tournament_results.csv", 'a')
             f.write(str_of_bots_results(results,[p1,p2])+'\n')
             f.close()
+    if rec:
+        generate_csv(5, [True], [7], [SIMPLE_RATIO,VORONOI,CHAMBER], False)
 
 
 
